@@ -287,6 +287,7 @@ fi
 	dwi=`ls $in_prepdwi_dir/prepdwi/${subj_sess_dir}/dwi/${subj_sess_prefix}*dwi*preproc.nii.gz | head -n 1`
 	bvec=${dwi%%.nii.gz}.bvec
 	bval=${dwi%%.nii.gz}.bval
+	grad_dev=${dwi%%.nii.gz}.grad_dev.nii.gz
 
 	echo "dwi: $dwi, bvec: $bvec, bval: $bval"
 
@@ -295,10 +296,17 @@ fi
 
 	mask=${dwi%%preproc.*}brainmask.nii.gz
 
+
 	out_subj=$out_folder/${subj_sess_dir}
 	mkdir -p $out_subj
 
 	protocol=$out_subj/$dwi_prefix.prtcl
+
+	#use gradient deviations if they exist..
+	if [ -e $grad_dev ]
+	then
+		model_fit_opts="$model_fit_opts --gradient-deviations $grad_dev "
+	fi
 
 	#make protocol
 	echo mdt-create-protocol $bvec $bval -o $protocol $create_protocol_opts
