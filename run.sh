@@ -44,10 +44,12 @@ then
  echo ""
  echo " Required arguments:"
  echo "          [--in_prepdwi_dir PREPDWI_DIR]" 
- echo "          [--model MODEL]"
+ echo "          [--model MODEL  (e.g. NODDI)]"
  echo ""
  echo " Optional arguments:"
  echo "          [--participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL...]]"
+ echo "          [--model_fit_opts \"[options for mdt-model-fit]\""
+ echo "          [--create_protocol_opts \"[options for mdt-create-protocol]\""
  echo ""
  exit 1
 fi
@@ -60,6 +62,7 @@ analysis_level=$3
 in_prepdwi_dir=
 model=
 model_fit_opts=
+create_protocol_opts=
 
 shift 3
 
@@ -127,11 +130,29 @@ while :; do
               die 'error: "--model_fit_opts" requires a non-empty option argument.'
             fi
               ;;
+
      --model_fit_opts=?*)
           model_fit_opts=${1#*=} # delete everything up to "=" and assign the remainder.
             ;;
           --model_fit_opts=)         # handle the case of an empty --participant=
          die 'error: "--model_fit_opts" requires a non-empty option argument.'
+          ;;
+
+
+           --create_protocol_opts )       # takes an option argument; ensure it has been specified.
+          if [ "$2" ]; then
+                create_protocol_opts=$2
+                  shift
+	      else
+              die 'error: "--create_protocol_opts" requires a non-empty option argument.'
+            fi
+              ;;
+
+     --create_protocol_opts=?*)
+          create_protocol_opts=${1#*=} # delete everything up to "=" and assign the remainder.
+            ;;
+          --create_protocol_opts=)         # handle the case of an empty --participant=
+         die 'error: "--create_protocol_opts" requires a non-empty option argument.'
           ;;
 
 
@@ -173,6 +194,12 @@ participants=$in_bids/participants.tsv
 
 work_folder=$out_folder/work
 
+
+if [ ! -n "$model" ]
+then
+	echo "$model not specified, please use the -m option to select a model"
+	exit 1
+fi
 
 if [ ! -n "$in_prepdwi_dir" ] # if not specified
 then
@@ -268,16 +295,18 @@ fi
 
 	mask=${dwi%%preproc.*}brainmask.nii.gz
 
-	out_work=$work_folder/${subj_sess_dir}
-	mkdir -p $out_work
+	out_subj=$out_folder/${subj_sess_dir}
+	mkdir -p $out_subj
 
-	protocol=$out_work/$dwi_prefix.prtcl
+	protocol=$out_subj/$dwi_prefix.prtcl
 
 	#make protocol
-	echo mdt-create-protocol $bvec $bval -o $protocol
+	echo mdt-create-protocol $bvec $bval -o $protocol $create_protocol_opts
+	mdt-create-protocol $bvec $bval -o $protocol $create_protocol_opts
 
 	#mdt-model-fit
-	echo mdt-model-fit $model $dwi $protocol $mask -o $out_work/$model
+	echo mdt-model-fit $model $dwi $protocol $mask -o $out_subj $model_fit_opts
+	mdt-model-fit $model $dwi $protocol $mask -o $out_subj $model_fit_opts
 	
 	done #subjfolder
 done #subj
