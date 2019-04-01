@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
 
-ENV MDT_VERSION v0.21.0
+ENV MDT_VERSION 0.21.0-1~xenial1
 
 RUN mkdir -p /opt/mdt-bids
 COPY . /opt/mdt-bids
