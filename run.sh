@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# run mdt on prepdwi pre-proc data, as a bids app
+# run mdt on snakedwi pre-proc data, as a bids app
 
 # <in bids> <out folder>  participant 
 
 # required args:
-#  --in_prepdwi_dir <path>
+#  --in_snakedwi_dir <path>
 #  --model <modelname>
 #  --model_fit_opts <options>
 
@@ -43,7 +43,7 @@ then
  echo "Usage: $0 <bids_dir> <output_dir> participant <optional arguments>"
  echo ""
  echo " Required arguments:"
- echo "          [--in_prepdwi_dir PREPDWI_DIR]" 
+ echo "          [--snakedwi_dir SNAKEDWI_DIR]" 
  echo "          [--model MODEL  (e.g. NODDI)]"
  echo ""
  echo " Optional arguments:"
@@ -59,7 +59,7 @@ in_bids=$1
 out_folder=$2
 analysis_level=$3
 
-in_prepdwi_dir=
+in_snakedwi_dir=
 model=
 model_fit_opts=
 create_protocol_opts=
@@ -90,19 +90,19 @@ while :; do
           die 'error: "--participant_label" requires a non-empty option argument.'
             ;;
 
-           --in_prepdwi_dir )       # takes an option argument; ensure it has been specified.
+           --in_snakedwi_dir )       # takes an option argument; ensure it has been specified.
           if [ "$2" ]; then
-                in_prepdwi_dir=$2
+                in_snakedwi_dir=$2
                   shift
 	      else
-              die 'error: "--in_prepdwi_dir" requires a non-empty option argument.'
+              die 'error: "--in_snakedwi_dir" requires a non-empty option argument.'
             fi
               ;;
-     --in_prepdwi_dir=?*)
-          in_prepdwi_dir=${1#*=} # delete everything up to "=" and assign the remainder.
+     --in_snakedwi_dir=?*)
+          in_snakedwi_dir=${1#*=} # delete everything up to "=" and assign the remainder.
             ;;
-          --in_prepdwi_dir=)         # handle the case of an empty --participant=
-         die 'error: "--in_prepdwi_dir" requires a non-empty option argument.'
+          --in_snakedwi_dir=)         # handle the case of an empty --participant=
+         die 'error: "--in_snakedwi_dir" requires a non-empty option argument.'
           ;;
 
 
@@ -201,39 +201,39 @@ then
 	exit 1
 fi
 
-if [ ! -n "$in_prepdwi_dir" ] # if not specified
+if [ ! -n "$in_snakedwi_dir" ] # if not specified
 then
 
     #if not specified, use stored value:
-    if [ -e $work_folder/etc/in_prepdwi_dir ]
+    if [ -e $work_folder/etc/in_snakedwi_dir ]
     then
-        in_prepdwi_dir=`cat $work_folder/etc/in_prepdwi_dir`
-        echo "Using previously defined --in_prepdwi_dir $in_prepdwi_dir"
+        in_snakedwi_dir=`cat $work_folder/etc/in_snakedwi_dir`
+        echo "Using previously defined --in_snakedwi_dir $in_snakedwi_dir"
     else
-        echo "ERROR: --in_prepdwi_dir must be specified!"
+        echo "ERROR: --in_snakedwi_dir must be specified!"
         exit 1
     fi
 
 fi
 
 
-if [ ! -e $in_prepdwi_dir ]
+if [ ! -e $in_snakedwi_dir ]
 then
-    echo "ERROR: in_prepdwi_dir $in_prepdwi_dir does not exist!"
+    echo "ERROR: in_snakedwi_dir $in_snakedwi_dir does not exist!"
 	exit 1
 fi
 
-in_prepdwi_dir=`realpath $in_prepdwi_dir`
+in_snakedwi_dir=`realpath $in_snakedwi_dir`
 
 
 echo mkdir -p $work_folder
 mkdir -p $work_folder 
 work_folder=`realpath $work_folder`
 
-#in_prepdwi_dir defined:
+#in_snakedwi_dir defined:
 #save it to file
 mkdir -p $work_folder/etc
-echo "$in_prepdwi_dir" > $work_folder/etc/in_prepdwi_dir
+echo "$in_snakedwi_dir" > $work_folder/etc/in_snakedwi_dir
 
 
 if [ ! -e $participants ]
@@ -283,8 +283,8 @@ fi
         echo subj_sess_prefix $subj_sess_prefix
 
 
-	#get _preproc.nii.gz from prepdwi
-	dwi=`ls $in_prepdwi_dir/prepdwi/${subj_sess_dir}/dwi/${subj_sess_prefix}*dwi*preproc.nii.gz | head -n 1`
+	#get _preproc.nii.gz from snakedwi
+	dwi=`ls $in_snakedwi_dir/results/${subj_sess_dir}/dwi/${subj_sess_prefix}_desc-eddy_dwi.nii.gz | head -n 1`
 	bvec=${dwi%%.nii.gz}.bvec
 	bval=${dwi%%.nii.gz}.bval
 	grad_dev=${dwi%%.nii.gz}.grad_dev.nii.gz
